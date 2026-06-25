@@ -7,7 +7,7 @@ import { useAuth }   from '../contexts/AuthContext.jsx'
 import { useToast }  from '../contexts/ToastContext.jsx'
 import { S }         from '../styles/tokens.js'
 
-const API = import.meta?.env?.VITE_API_URL || 'http://127.0.0.1:8000/api/v1'
+const API = import.meta?.env?.VITE_API_URL || 'https://api.valcr.site/api/v1'
 // console.log('VITE_GOOGLE_CLIENT_ID:', clientId)
 
 // ── Secure fetch — adds CSRF indicator header on every request ───────────────
