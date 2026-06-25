@@ -1,0 +1,25 @@
+# robots.txt — Valcr Console (console.valcr.site)
+# Updated: 2025-01-14
+
+User-agent: *
+
+# The console is an authenticated SPA. Only the root (login page) is public.
+Allow: /$
+Allow: /index.html
+
+# Block asset directories — no value for search engines
+Disallow: /assets/
+Disallow: /api/
+
+# GPTBot / AI crawlers — opt out
+User-agent: GPTBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+# Sitemap
+Sitemap: https://console.valcr.site/sitemap.xml
