@@ -1,0 +1,19 @@
+VALCR CONSOLE FULL FIX V2
+
+Validated:
+- All frontend .js/.jsx files parse through the TypeScript JSX transpiler.
+- All backend .py files compile with Python py_compile.
+- Empty Turnstile token removed.
+- Hardcoded window.VITE_GOOGLE_CLIENT_ID removed.
+- Auth response and /auth/me include separate Data API entitlement fields.
+- Frontend and backend Console billing endpoint paths match.
+- Frontend plan IDs developer/startup/growth map to backend Paystack IDs.
+- Paystack checkout response returns checkout_url and authorization_url.
+- Data API columns are separated from main account_tier and main Paystack fields.
+- Existing main payments webhook branches Data API events away from account_tier.
+
+Not live-tested:
+- Google Cloud OAuth project settings.
+- Cloudflare Turnstile site-key/secret-key hostname pairing.
+- Live Paystack checkout and webhook payloads.
+- Full frontend build against the user's local unshared source tree.
