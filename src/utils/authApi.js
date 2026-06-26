@@ -1,18 +1,14 @@
 import { apiFetch } from './http.js'
 
 export const authAPI = {
-  login: ({ email, password, turnstileToken }) =>
+  login: ({ email, password }) =>
     apiFetch('/auth/login', {
       method: 'POST',
       auth: false,
-      body: {
-        email,
-        password,
-        turnstile_token: turnstileToken,
-      },
+      body: { email, password },
     }),
 
-  register: ({ firstName, lastName, email, password, turnstileToken }) =>
+  register: ({ firstName, lastName, email, password }) =>
     apiFetch('/auth/register', {
       method: 'POST',
       auth: false,
@@ -21,7 +17,6 @@ export const authAPI = {
         last_name: lastName,
         email,
         password,
-        turnstile_token: turnstileToken,
       },
     }),
 

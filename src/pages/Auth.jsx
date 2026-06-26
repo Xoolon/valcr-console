@@ -1,18 +1,20 @@
 // src/pages/Auth.jsx — Valcr Console authentication
 import { useCallback, useState } from 'react'
-import { TurnstileWidget } from '../components/TurnstileWidget.jsx'
 import { useAuth } from '../contexts/AuthContext.jsx'
 import { useToast } from '../contexts/ToastContext.jsx'
 import { authAPI } from '../utils/authApi.js'
 import { mapAuthResponse, writeSession } from '../utils/session.js'
 import { S } from '../styles/tokens.js'
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
-const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || ''
+const GOOGLE_CLIENT_ID = (
+  import.meta.env.VITE_GOOGLE_CLIENT_ID
+  || window.__VALCR_CONFIG__?.GOOGLE_CLIENT_ID
+  || '143161014607-mleat5tn3hbc6aorsdd38f201m8lo0gj.apps.googleusercontent.com'
+)
 
 function loadGoogleIdentityServices(onSuccess, onError) {
   if (!GOOGLE_CLIENT_ID) {
-    onError('Google OAuth is not configured in this build. Set VITE_GOOGLE_CLIENT_ID and rebuild.')
+    onError('Google OAuth client ID is missing.')
     return
   }
 
@@ -267,8 +269,6 @@ export function LoginPage({ onSignup }) {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [turnstileToken, setTurnstileToken] = useState('')
-  const [turnstileVersion, setTurnstileVersion] = useState(0)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [error, setError] = useState('')
@@ -276,10 +276,6 @@ export function LoginPage({ onSignup }) {
   const [pendingSession, setPendingSession] = useState(null)
   const [resent, setResent] = useState(false)
 
-  const resetTurnstile = () => {
-    setTurnstileToken('')
-    setTurnstileVersion(value => value + 1)
-  }
 
   const finishGoogleLogin = useCallback(async accessToken => {
     setGoogleLoading(true)
@@ -312,15 +308,6 @@ export function LoginPage({ onSignup }) {
       setError('Email and password are required.')
       return
     }
-    if (!TURNSTILE_SITE_KEY) {
-      setError('Turnstile is not configured. Set VITE_TURNSTILE_SITE_KEY and rebuild.')
-      return
-    }
-    if (!turnstileToken) {
-      setError('Complete the security check before signing in.')
-      return
-    }
-
     setLoading(true)
     setError('')
     setUnverified(false)
@@ -329,7 +316,6 @@ export function LoginPage({ onSignup }) {
       const response = await authAPI.login({
         email: email.trim(),
         password,
-        turnstileToken,
       })
       const session = mapAuthResponse(response)
 
@@ -344,7 +330,6 @@ export function LoginPage({ onSignup }) {
       toast('Welcome back', 'success')
     } catch (caught) {
       setError(caught.message || 'Sign-in failed.')
-      resetTurnstile()
     } finally {
       setLoading(false)
     }
@@ -411,17 +396,6 @@ export function LoginPage({ onSignup }) {
         </a>
       </div>
 
-      <TurnstileWidget
-        key={turnstileVersion}
-        siteKey={TURNSTILE_SITE_KEY}
-        onToken={setTurnstileToken}
-        onExpire={() => setTurnstileToken('')}
-        onError={() => {
-          setTurnstileToken('')
-          setError('The security check failed to load. Refresh and try again.')
-        }}
-      />
-
       <PrimaryButton onClick={handleLogin} disabled={loading || googleLoading}>
         {loading ? 'Signing in…' : 'Sign in to Console'}
       </PrimaryButton>
@@ -441,8 +415,6 @@ export function SignupPage({ onLogin }) {
   const { establishSession } = useAuth()
 
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', confirm: '' })
-  const [turnstileToken, setTurnstileToken] = useState('')
-  const [turnstileVersion, setTurnstileVersion] = useState(0)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [error, setError] = useState('')
@@ -453,10 +425,6 @@ export function SignupPage({ onLogin }) {
     setForm(previous => ({ ...previous, [key]: event.target.value }))
   }
 
-  const resetTurnstile = () => {
-    setTurnstileToken('')
-    setTurnstileVersion(value => value + 1)
-  }
 
   const finishGoogleSignup = useCallback(async accessToken => {
     setGoogleLoading(true)
@@ -499,15 +467,6 @@ export function SignupPage({ onLogin }) {
       setError('Password must be at least 8 characters.')
       return
     }
-    if (!TURNSTILE_SITE_KEY) {
-      setError('Turnstile is not configured. Set VITE_TURNSTILE_SITE_KEY and rebuild.')
-      return
-    }
-    if (!turnstileToken) {
-      setError('Complete the security check before creating the account.')
-      return
-    }
-
     setLoading(true)
     setError('')
 
@@ -517,7 +476,6 @@ export function SignupPage({ onLogin }) {
         lastName: lastName.trim(),
         email: email.trim(),
         password,
-        turnstileToken,
       })
       const session = mapAuthResponse(response)
       writeSession(session)
@@ -525,7 +483,6 @@ export function SignupPage({ onLogin }) {
       setCompletedEmail(email.trim())
     } catch (caught) {
       setError(caught.message || 'Account creation failed.')
-      resetTurnstile()
     } finally {
       setLoading(false)
     }
@@ -575,17 +532,6 @@ export function SignupPage({ onLogin }) {
         onChange={setField('confirm')}
         onKeyDown={event => event.key === 'Enter' && handleSignup()}
         autoComplete="new-password"
-      />
-
-      <TurnstileWidget
-        key={turnstileVersion}
-        siteKey={TURNSTILE_SITE_KEY}
-        onToken={setTurnstileToken}
-        onExpire={() => setTurnstileToken('')}
-        onError={() => {
-          setTurnstileToken('')
-          setError('The security check failed to load. Refresh and try again.')
-        }}
       />
 
       <PrimaryButton onClick={handleSignup} disabled={loading || googleLoading}>
