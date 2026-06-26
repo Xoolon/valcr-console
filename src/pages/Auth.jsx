@@ -1,6 +1,5 @@
 // src/pages/Auth.jsx — Valcr Console Auth
-// FIXES: last_name field added, turnstile_token empty string, correct field mapping
-// NEW: Google OAuth (GSI), email verification screen, security headers on all requests
+// No Turnstile widget – sends empty token; backend test secret accepts it.
 
 import { useState, useCallback } from 'react'
 import { useAuth }   from '../contexts/AuthContext.jsx'
@@ -8,9 +7,8 @@ import { useToast }  from '../contexts/ToastContext.jsx'
 import { S }         from '../styles/tokens.js'
 
 const API = import.meta?.env?.VITE_API_URL || 'https://api.valcr.site/api/v1'
-// console.log('VITE_GOOGLE_CLIENT_ID:', clientId)
 
-// ── Secure fetch — adds CSRF indicator header on every request ───────────────
+// ── Secure fetch ─────────────────────────────────────────────────────────────
 async function secureFetch(url, options = {}) {
   const headers = {
     'Content-Type': 'application/json',
@@ -50,7 +48,7 @@ function persistSession(session) {
   localStorage.setItem('vcr_console_auth', JSON.stringify(session))
 }
 
-// ── Load Google Identity Services and open popup ─────────────────────────────
+// ── Load Google Identity Services ───────────────────────────────────────────
 function loadGSI(onSuccess, onError) {
   const clientId = import.meta?.env?.VITE_GOOGLE_CLIENT_ID || window.VITE_GOOGLE_CLIENT_ID || ''
   if (!clientId) { onError('Google OAuth not configured (VITE_GOOGLE_CLIENT_ID missing)'); return }
@@ -204,7 +202,7 @@ export function LoginPage({ onSignup }) {
         body: JSON.stringify({
           email,
           password,
-          turnstile_token: '',   // backend accepts empty string outside prod
+          turnstile_token: '',   // ← empty token – backend test key accepts it
         }),
       })
 
@@ -263,6 +261,7 @@ export function LoginPage({ onSignup }) {
       <Field label="PASSWORD" type="password" placeholder="••••••••" value={password}
         onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleLogin()} autoComplete="current-password" />
 
+      {/* No Turnstile widget – we send empty token */}
       <div style={{ textAlign:'right',marginBottom:14,marginTop:-4 }}>
         <a href="https://valcr.site/forgot-password" style={{ fontFamily:S.mono,fontSize:10,color:S.text3,textDecoration:'none' }}>Forgot password?</a>
       </div>
@@ -319,15 +318,14 @@ export function SignupPage({ onLogin }) {
 
     setLoading(true); setError('')
     try {
-      // ── All fields exactly matching RegisterRequest on backend ─────────────
       const data = await secureFetch(`${API}/auth/register`, {
         method: 'POST',
         body: JSON.stringify({
           email,
           password,
-          first_name:      firstName.trim(),   // ← matches backend field
-          last_name:       lastName.trim(),    // ← backend REQUIRES this
-          turnstile_token: '',                 // ← backend accepts '' in dev
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          turnstile_token: '',   // ← empty token – backend test key accepts it
         }),
       })
 
@@ -378,6 +376,7 @@ export function SignupPage({ onLogin }) {
       <Field label="CONFIRM PASSWORD" type="password" placeholder="••••••••"           value={form.confirm}  onChange={set('confirm')}
         onKeyDown={e=>e.key==='Enter'&&handleSignup()} autoComplete="new-password" />
 
+      {/* No Turnstile widget – we send empty token */}
       <PrimaryBtn onClick={handleSignup} disabled={loading} style={{ marginTop:4 }}>
         {loading ? 'Creating account…' : 'Create account'}
       </PrimaryBtn>
